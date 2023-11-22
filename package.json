@@ -1,0 +1,44 @@
+{
+  "name": "pop-notify",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "Easy context menu manager for Bootstrap and vanilla js",
+  "main": "pop-notify",
+  "scripts": {
+    "test": "ava",
+    "build": "esbuild --bundle --minify --format=esm --sourcemap pop-notify.js --outfile=pop-notify.min.js",
+    "start": "npm run build -- --servedir=.",
+    "watch": "npm run build -- --watch",
+    "build-min": "npm run build && git add -A && git commit -m \"build min file\"",
+    "update-deps": "npx npm-check-updates -u",
+    "jsdoc": "npx jsdoc-to-markdown pop-notify.js",
+    "bump": "npm run build-min && npm version patch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lekoala/pop-notify"
+  },
+  "keywords": [
+    "DOM",
+    "pop",
+    "notify",
+    "popover",
+    "notification",
+    "bootstrap",
+    "bootstrap5",
+    "bootstrap 5",
+    "es6"
+  ],
+  "author": "LeKoala",
+  "license": "MIT",
+  "ava": {
+    "require": [
+      "./test/_setup-browser-env.js"
+    ]
+  },
+  "devDependencies": {
+    "ava": "^5.3.1",
+    "@happy-dom/global-registrator": "^9.20",
+    "esbuild": "^0.18.14"
+  }
+}
