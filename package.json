@@ -6,7 +6,7 @@
   "main": "pop-notify",
   "scripts": {
     "test": "ava",
-    "build": "esbuild --bundle --minify --format=esm --sourcemap pop-notify.js --outfile=pop-notify.min.js",
+    "build": "esbuild --bundle --minify --format=esm pop-notify.js --outfile=pop-notify.min.js",
     "start": "npm run build -- --servedir=.",
     "watch": "npm run build -- --watch",
     "build-min": "npm run build && git add -A && git commit -m \"build min file\"",
