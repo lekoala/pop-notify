@@ -116,7 +116,9 @@ to the toast container and displayed accordingly.
 Simply call the static `configure` method.
 
 ```js
-customElements.get("pop-notify").configure({});
+customElements.whenDefined("pop-notify").then(() => {
+  customElements.get("pop-notify").configure({});
+});
 ```
 
 | Name            | Type                  | Description                                |
