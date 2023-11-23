@@ -1,8 +1,43 @@
+/* Constants */
+
 const DOC = document;
 const O = Object;
 const BODY = DOC.body;
 const NAME = "pop-notify";
 const CE = customElements;
+
+/**
+ * @typedef Config
+ * @property {String} placement Where to position container
+ * @property {Number} openTime Time to open in seconds
+ * @property {Number} closeTime Time to close in seconds
+ * @property {Number} defaultDuration Default duration for autohide in seconds
+ * @property {String} closeSelector Selector to find close button
+ * @property {String} closeLabel Close label in the template
+ * @property {String} classPrefix Prefix for the css classes in the template
+ * @property {Function} template Generator function
+ */
+
+/**
+ * @type {Config}
+ */
+const options = {
+  placement: "auto",
+  openTime: 0.5,
+  closeTime: 1,
+  defaultDuration: 5,
+  closeSelector: ".btn-close,.close,[data-close]",
+  closeLabel: "Close",
+  classPrefix: "notification",
+  template: (o) => {
+    return `<div class="notification ${o.variant ? `notification-${o.variant}` : ""}" role="status">
+    ${o.header ? `<div class="notification-header">${o.header}</div>` : ""}
+    <div class="notification-body">${o.body}</div>
+   ${o.close ? `<button type="button" class="btn-close" aria-label="${options.closeLabel}'"></button>` : ""}
+   </div>
+   </div>`;
+  },
+};
 
 function animationReduced() {
   return (
@@ -15,9 +50,60 @@ function supportsPopover() {
 }
 
 /**
+ * @param {HTMLElement} container
+ * @param {HTMLElement} el
+ */
+function addToContainer(container, el) {
+  if (options.placement.includes("bottom")) {
+    container.appendChild(el);
+  } else {
+    container.prepend(el);
+  }
+}
+
+function animateFrom() {
+  return options.placement.includes("bottom") ? "marginBottom" : "marginTop";
+}
+
+function spaceFrom() {
+  return options.placement.includes("bottom") ? "marginTop" : "marginBottom";
+}
+
+/**
  * @param {HTMLElement} el
  */
 function show(el) {
+  let [posV, posH] = options.placement.split("-");
+
+  // Single argument
+  if (!posH) {
+    posH = posV;
+    posV = "top";
+  }
+
+  // Center means left 50%
+  let posUnit = "0";
+  if (posH == "center") {
+    posUnit = "50%";
+    posH = "left";
+  }
+
+  // Auto depends on RTL
+  if (posH == "auto") {
+    posH = BODY.dir == "rtl" ? "left" : "right";
+  }
+
+  el.style[posH] = posUnit;
+  el.style.transform = posUnit == "50%" ? "translateX(-50%)" : "";
+  el.style[posV] = "0";
+
+  // Clear other pos
+  const altPosH = posH == "right" ? "left" : "right";
+  el.style[altPosH] = "unset";
+
+  const altPosV = posV == "top" ? "bottom" : "top";
+  el.style[altPosV] = "unset";
+
   if (supportsPopover()) {
     el.showPopover();
   } else if (el.style.display != "block") {
@@ -64,19 +150,18 @@ function createContainer() {
   el.id = "pop-notify-container";
   attr(el, "aria-live", "polite");
   attr(el, "aria-relevant", "additions");
-  el.style.cssText = `position:fixed;overflow:hidden;inset:unset;border:0;padding:var(--pop-notify-spacing, 1rem);max-width:100%;background:transparent;`;
+  // use overflow hidden to avoid any scrollbar due to negative margin
+  // reset browsers popover styles
+  // add a healthy margin around the screen border
+  el.style.cssText = `position:fixed;overflow:hidden;inset:unset;border:0;margin:var(--pop-notify-spacing, 1rem);max-width:100%;background:transparent;pointerEvents:none;`;
   if (supportsPopover()) {
     el.popover = "manual";
   } else {
     O.assign(el.style, {
       zIndex: "9999",
       display: "none",
-      pointerEvents: "none",
     });
   }
-  const pos = BODY.dir == "rtl" ? "left" : "right";
-  el.style.top = "0px";
-  el.style[pos] = "0px";
   return el;
 }
 
@@ -86,38 +171,6 @@ function hideIfEmpty(el) {
   }
 }
 
-/**
- * @typedef Config
- * @property {Number} openTime Time to open in seconds
- * @property {Number} closeTime Time to close in seconds
- * @property {Number} defaultDuration Default duration for autohide in seconds
- * @property {String} closeSelector Selector to find close button
- * @property {String} closeLabel Close label in the template
- * @property {String} classPrefix Prefix for the css classes in the template
- * @property {Function} template Generator function
-
- */
-
-/**
- * @type {Config}
- */
-const options = {
-  openTime: 0.5,
-  closeTime: 1,
-  defaultDuration: 5,
-  closeSelector: ".btn-close,.close,[data-close]",
-  closeLabel: "Close",
-  classPrefix: "notification",
-  template: (o) => {
-    return `<div class="notification ${o.variant ? `notification-${o.variant}` : ""}" role="status">
-    ${o.header ? `<div class="notification-header">${o.header}</div>` : ""}
-    <div class="notification-body">${o.body}</div>
-   ${o.close ? `<button type="button" class="btn-close" aria-label="${options.closeLabel}'"></button>` : ""}
-   </div>
-   </div>`;
-  },
-};
-
 const container = createContainer();
 BODY.appendChild(container);
 
@@ -125,21 +178,22 @@ class PopNotify extends HTMLElement {
   constructor() {
     super();
 
-    // Required for animation
-    O.assign(this.style, {
+    const styles = {
       display: "block", // required for scale animation
-      marginBottom: "var(--pop-notify-spacing, 1rem)",
-      marginTop: "-48px",
       maxWidth: "100%",
       width: "var(--pop-notify-width, 350px)",
       opacity: "0",
       transform: "scale(0)",
-      pointerEvents: "all",
-    });
+      overflowWrap: "anywhere", // helps to prevent overflow text outside of toast
+    };
+    // The margin for the next toast needs to be there in order to place it easily
+    // This has the minor downside that a small space below is not clickable
+    styles[spaceFrom()] = "var(--pop-notify-spacer, 1rem)";
+    styles[animateFrom()] = "-2rem";
+    O.assign(this.style, styles);
 
     this.autohideTo = null;
     this.closeTo = null;
-    this.openTo = null;
   }
 
   _setrm(n, v = "") {
@@ -155,7 +209,7 @@ class PopNotify extends HTMLElement {
 
     // It will move to the container
     if (!container.contains(this)) {
-      container.prepend(this);
+      addToContainer(container, this);
     }
 
     this.addEventListener("click", this);
@@ -173,9 +227,6 @@ class PopNotify extends HTMLElement {
     this.removeEventListener("click", this);
     if (this.autohideTo) {
       clearTimeout(this.autohideTo);
-    }
-    if (this.openTo) {
-      clearTimeout(this.openTo);
     }
     if (this.closeTo) {
       clearTimeout(this.closeTo);
@@ -215,14 +266,15 @@ class PopNotify extends HTMLElement {
   open() {
     if (!animationReduced()) {
       // The setTimeout is actually needed in order to play the animation and make sure the layout is computed
-      this.openTo = setTimeout(() => {
-        let ms = options.openTime * 500;
-        O.assign(this.style, {
+      setTimeout(() => {
+        const ms = options.openTime * 500;
+        const styles = {
           transition: `all ${ms}ms cubic-bezier(0.165, 0.84, 0.44, 1), opacity ${ms / 2}ms ease`,
           opacity: `1`,
           transform: `scale(1)`,
-          marginTop: `0px`,
-        });
+        };
+        styles[animateFrom()] = "0";
+        O.assign(this.style, styles);
       }, 12);
     }
   }
@@ -235,12 +287,14 @@ class PopNotify extends HTMLElement {
     let ms = 0;
     if (!animationReduced()) {
       ms = options.closeTime * 1000;
-      O.assign(this.style, {
+      const styles = {
         transition: `all ${ms}ms cubic-bezier(0.165, 0.84, 0.44, 1), opacity ${ms / 4}ms ease`,
         opacity: `0`,
         transform: `scale(0)`,
-        marginTop: `-${getAbsoluteHeight(this)}px`,
-      });
+      };
+      // We need to exact height (including the two margins) for a smooth transition
+      styles[animateFrom()] = `-${getAbsoluteHeight(this)}px`;
+      O.assign(this.style, styles);
     }
 
     this.closeTo = setTimeout(() => {
@@ -253,7 +307,7 @@ class PopNotify extends HTMLElement {
     const el = new PopNotify();
     el.innerHTML = html;
     el.autohide = autohide;
-    container.prepend(el);
+    addToContainer(container, el);
 
     return el;
   }

@@ -27,20 +27,34 @@
     /* Demo styles */
     .notification {
       background: #eee;
-      padding: 1rem;
       position: relative;
+      border-radius: 0.5rem;
+
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.07),
+        0 2px 4px rgba(0, 0, 0, 0.07),
+        0 4px 8px rgba(0, 0, 0, 0.07),
+        0 8px 16px rgba(0, 0, 0, 0.07);
+    }
+
+    .notification-simple {
+      padding: 0.5rem 1rem;
     }
 
     .notification .btn-close {
       position: absolute;
-      top: 1rem;
+      top: 0.5rem;
       right: 1rem;
     }
 
     .notification .notification-header {
-      border-bottom: 1px solid;
-      padding-bottom: 0.25rem;
-      margin-bottom: 0.25rem;
+      border-bottom: 2px solid rgba(0, 0, 0, 0.15);
+      padding: 0.5rem 1rem;
+    }
+
+    .notification .notification-body {
+      padding: 0.5rem 1rem;
+      font-size: 0.85em;
+      background: rgba(255, 255, 255, 0.2);
     }
 
     .notification.notification-success {
@@ -76,19 +90,24 @@ Hello, world! This is a toast message nb ${id}.
 </div>
 `;
     }
+
+    function popNotify() {
+      return customElements.get('pop-notify');
+    }
+
     document.querySelector('#simpleNotification').addEventListener('click', (ev) => {
-      customElements.get('pop-notify').notifyHtml(`<div class="notification">A simple notification! <button type="button" class="btn-close" aria-label="Close"></button></div>`);
+      popNotify().notifyHtml(`<div class="notification notification-simple">A simple notification! <button type="button" class="btn-close" aria-label="Close"></button></div>`);
     })
 
     document.querySelector('#complexNotification').addEventListener('click', (ev) => {
-      customElements.get('pop-notify').notify("This is the body", {
+      popNotify().notify("This is the body. Ithasawordthathasnobreakingspacebutshouldneverthelessnotexpandoutsideofthetoast", {
         'variant': 'success',
         'header': 'Success!'
       });
     })
 
     document.querySelector('#stickyNotification').addEventListener('click', (ev) => {
-      customElements.get('pop-notify').notify("It doesn't close automatically", {
+      popNotify().notify("It doesn't close automatically", {
         'variant': 'warning',
         'header': 'Sticky!',
         'autohide': false,
@@ -96,11 +115,18 @@ Hello, world! This is a toast message nb ${id}.
     })
 
     document.querySelector('#toastBtn').addEventListener('click', (ev) => {
-      customElements.get('pop-notify').notifyHtml(createBootstrapToast(), false);
+      popNotify().notifyHtml(createBootstrapToast(), false);
     })
 
     document.querySelector('#autohideToastBtn').addEventListener('click', (ev) => {
-      customElements.get('pop-notify').notifyHtml(createBootstrapToast());
+      popNotify().notifyHtml(createBootstrapToast());
+    })
+
+    document.querySelector('#position').addEventListener('change', (ev) => {
+      console.log(`position changed to ${ev.target.value}`);
+      popNotify().configure({
+        placement: ev.target.value
+      })
     })
   </script>
 </head>
@@ -110,10 +136,26 @@ Hello, world! This is a toast message nb ${id}.
   <div class="p-3">
 
     <pop-notify autohide>
-      <div class="notification">
+      <div class="notification notification-simple">
         Welcome to pop notify! <button type="button" class="btn-close" aria-label="Close"></button>
       </div>
     </pop-notify>
+
+    Position
+    <select id="position">
+      <option>auto</option>
+      <option>left</option>
+      <option>right</option>
+      <option>center</option>
+      <option>top-left</option>
+      <option>top-center</option>
+      <option>top-right</option>
+      <option>bottom-left</option>
+      <option>bottom-center</option>
+      <option>bottom-right</option>
+    </select>
+
+    <hr>
 
     <button type="button" class="btn btn-primary" id="simpleNotification">A simple notification</button>
 
@@ -121,7 +163,8 @@ Hello, world! This is a toast message nb ${id}.
 
     <button type="button" class="btn btn-primary" id="stickyNotification">A more complex sticky notification</button>
 
-    <button type="button" class="btn btn-primary" id="htmxNotification" hx-get="demo-htmx.html" hx-target="#htmx-target">A htmx notification</button>
+    <button type="button" class="btn btn-primary" id="htmxNotification" hx-get="demo-htmx.html" hx-target="#htmx-target">A htmx
+      notification</button>
 
     <button type="button" class="btn btn-primary" id="toastBtn">Show toast</button>
 
