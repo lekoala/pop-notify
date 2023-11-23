@@ -22,6 +22,7 @@
     "DOM",
     "pop",
     "notify",
+    "toast",
     "popover",
     "notification",
     "bootstrap",
@@ -31,14 +32,7 @@
   ],
   "author": "LeKoala",
   "license": "MIT",
-  "ava": {
-    "require": [
-      "./test/_setup-browser-env.js"
-    ]
-  },
   "devDependencies": {
-    "ava": "^5.3.1",
-    "@happy-dom/global-registrator": "^9.20",
-    "esbuild": "^0.18.14"
+    "esbuild": "^0.19.7"
   }
 }
