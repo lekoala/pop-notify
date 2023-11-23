@@ -2,7 +2,7 @@
   "name": "pop-notify",
   "type": "module",
   "version": "1.0.0",
-  "description": "Easy context menu manager for Bootstrap and vanilla js",
+  "description": "A modern custom element to create toast notifications",
   "main": "pop-notify",
   "scripts": {
     "test": "ava",
