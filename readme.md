@@ -14,6 +14,7 @@
 - Fully accessible
 - Nice animations
 - Actions support
+- Just 5kb
 
 ## How to use
 
