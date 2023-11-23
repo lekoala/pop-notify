@@ -15,6 +15,8 @@ const CE = customElements;
  * @property {String} closeSelector Selector to find close button
  * @property {String} closeLabel Close label in the template
  * @property {String} classPrefix Prefix for the css classes in the template
+ * @property {String} buttonClass Base class for buttons
+ * @property {Function} iconTransformer Icon transformer function
  * @property {Function} template Generator function
  */
 
@@ -29,10 +31,26 @@ const options = {
   closeSelector: ".btn-close,.close,[data-close]",
   closeLabel: "Close",
   classPrefix: "notification",
+  buttonClass: "btn",
+  iconTransformer: (i) => i,
   template: (o) => {
-    return `<div class="notification ${o.variant ? `notification-${o.variant}` : ""}" role="status">
-    ${o.header ? `<div class="notification-header">${o.header}</div>` : ""}
-    <div class="notification-body">${o.body}</div>
+    const c = options.classPrefix;
+    return `<div class="${c} ${o.variant ? `${c}-${o.variant}` : ""}" role="status">
+    ${o.header ? `<div class="${c}-header">${o.icon ? `<div class="${c}-icon">${o.icon}</div>` : ""}${o.header}</div>` : ""}
+    <div class="${c}-content">
+    ${o.icon && !o.header ? `<div class="${c}-icon">${o.icon}</div>` : ""}<div class="${c}-body">${o.body}</div>
+    </div>
+    ${
+      o.actions
+        ? `<div class="${c}-actions">${(() => {
+            let html = "";
+            o.actions.forEach((action) => {
+              html += `<button class="${options.buttonClass} ${action.class}">${action.label}</button>`;
+            });
+            return html;
+          })()}</div>`
+        : ""
+    }
    ${o.close ? `<button type="button" class="btn-close" aria-label="${options.closeLabel}'"></button>` : ""}
    </div>
    </div>`;
@@ -194,6 +212,7 @@ class PopNotify extends HTMLElement {
 
     this.autohideTo = null;
     this.closeTo = null;
+    this.clickHandler = null;
   }
 
   _setrm(n, v = "") {
@@ -212,19 +231,17 @@ class PopNotify extends HTMLElement {
       addToContainer(container, this);
     }
 
-    this.addEventListener("click", this);
-
-    if (this.autohide) {
-      this.autohideTo = setTimeout(() => {
-        this.close();
-      }, this.delay * 1000);
-    }
+    ["click", "mouseenter", "mouseleave"].forEach((type) => {
+      this.addEventListener(type, this);
+    });
 
     this.open();
   }
 
   disconnectedCallback() {
-    this.removeEventListener("click", this);
+    ["click", "mouseenter", "mouseleave"].forEach((type) => {
+      this.removeEventListener(type, this);
+    });
     if (this.autohideTo) {
       clearTimeout(this.autohideTo);
     }
@@ -257,10 +274,47 @@ class PopNotify extends HTMLElement {
    * @param {Event|MouseEvent} ev
    */
   onclick(ev) {
+    // Did we click on close ?
     const closeTrigger = this.querySelector(options.closeSelector);
     if (closeTrigger && ev.composedPath().includes(closeTrigger)) {
       this.close();
+      return;
     }
+
+    if (this.clickHandler && ev.target.matches("a,button")) {
+      this.clickHandler(ev, this);
+    }
+  }
+
+  /**
+   * @param {Event|MouseEvent} ev
+   */
+  onmouseenter(ev) {
+    // Keep it around while user interacts with it
+    if (this.autohideTo) {
+      clearTimeout(this.autohideTo);
+    }
+  }
+  /**
+   * @param {Event|MouseEvent} ev
+   */
+  onmouseleave(ev) {
+    this._createAutohideTimeout();
+  }
+
+  _createAutohideTimeout() {
+    if (!this.autohide) {
+      return;
+    }
+    // If we have links, it should stay longer
+    let delay = this.delay * 1000 * (this.querySelectorAll("a").length + 1);
+    this.autohideTo = setTimeout(() => {
+      this.close();
+    }, delay);
+  }
+
+  setClickHandler(fn) {
+    this.clickHandler = fn;
   }
 
   open() {
@@ -277,6 +331,7 @@ class PopNotify extends HTMLElement {
         O.assign(this.style, styles);
       }, 12);
     }
+    this._createAutohideTimeout();
   }
 
   close() {
@@ -303,6 +358,13 @@ class PopNotify extends HTMLElement {
     }, ms);
   }
 
+  /**
+   * Add raw html as a notification
+   *
+   * @param {String} html
+   * @param {Boolean} autohide
+   * @returns {PopNotify}
+   */
   static notifyHtml(html, autohide = true) {
     const el = new PopNotify();
     el.innerHTML = html;
@@ -312,15 +374,41 @@ class PopNotify extends HTMLElement {
     return el;
   }
 
+  /**
+   * Creates a notification using the template helper
+   *
+   * @param {String} msg
+   * @param {Object} opts
+   */
   static notify(msg, opts = {}) {
+    // Shortcut to set body
     if (typeof msg === "string") {
       opts = O.assign(opts, {
         body: msg,
       });
     }
+    // Autohide by default
     opts.autohide = typeof opts.autohide === "undefined" ? true : !!opts.autohide;
-    opts.close = typeof opts.close === "undefined" ? !opts.autohide : !!opts.close;
-    PopNotify.notifyHtml(options.template(opts), opts.autohide);
+    // Show close by default
+    opts.close = typeof opts.close === "undefined" ? true : !!opts.close;
+    if (opts.icon) {
+      opts.icon = options.iconTransformer(opts.icon);
+    }
+    const inst = PopNotify.notifyHtml(options.template(opts), opts.autohide);
+    // Create some generic actions handler
+    if (opts.actions) {
+      opts.onclick = (ev, inst) => {
+        const idx = [...ev.target.parentElement.children].indexOf(ev.target);
+        if (opts.actions[idx].onclick) {
+          opts.actions[idx].onclick(ev, inst);
+        } else {
+          throw `Unhandled action on button ${idx}`;
+        }
+      };
+    }
+    if (opts.onclick) {
+      inst.setClickHandler(opts.onclick);
+    }
   }
 
   static configure(opts) {
