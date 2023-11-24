@@ -7,9 +7,11 @@
   "scripts": {
     "test": "ava",
     "build": "esbuild --bundle --minify --format=esm pop-notify.js --outfile=pop-notify.min.js",
+    "build-styled": "esbuild --bundle --minify --format=esm --loader:.css=text pop-notify.styled.js --outfile=pop-notify.styled.min.js",
+    "minify-css": "esbuild --bundle --minify pop-notify.css --outfile=pop-notify.min.css",
     "start": "npm run build -- --servedir=.",
     "watch": "npm run build -- --watch",
-    "build-min": "npm run build && git add -A && git commit -m \"build min file\"",
+    "build-min": "npm run build && npm run minify-css && npm run build-styled && git add -A && git commit -m \"build min file\"",
     "update-deps": "npx npm-check-updates -u",
     "jsdoc": "npx jsdoc-to-markdown src/PopNotify.js",
     "bump": "npm run build-min && npm version patch"
