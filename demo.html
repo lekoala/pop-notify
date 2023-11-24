@@ -10,6 +10,12 @@
   <script src="https://unpkg.com/htmx.org@1.9.9"></script>
   <script type="module" src="./pop-notify.js"></script>
 
+  <style>
+    /* Avoid fouc */
+    :not(:defined) {
+      visibility: hidden;
+    }
+  </style>
   <link rel="stylesheet" href="pop-notify.css">
 
   <script type="module">
