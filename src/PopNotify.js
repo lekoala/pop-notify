@@ -205,7 +205,7 @@ class PopNotify extends HTMLElement {
       overflowWrap: "anywhere", // helps to prevent overflow text outside of toast
     };
     // The margin for the next toast needs to be there in order to place it easily
-    // This has the minor downside that a small space below is not clickable
+    // This has the minor downside that a small space below is not clickable unless we add a last-child rule in css
     styles[spaceFrom()] = "var(--pop-notify-spacer, 1rem)";
     styles[animateFrom()] = "-2rem";
     O.assign(this.style, styles);

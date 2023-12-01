@@ -140,3 +140,7 @@ pop-notify {
     background: var(--question-color);
     color: #fff;
 }
+
+#pop-notify-container pop-notify:last-child {
+    --pop-notify-spacer: 0;
+}
