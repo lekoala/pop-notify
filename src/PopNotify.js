@@ -274,16 +274,27 @@ class PopNotify extends HTMLElement {
    * @param {Event|MouseEvent} ev
    */
   onclick(ev) {
-    // Did we click on close ?
-    const closeTrigger = this.querySelector(options.closeSelector);
-    if (closeTrigger && ev.composedPath().includes(closeTrigger)) {
-      this.close();
+    // Did we click on any close button ?
+    this._closeTriggers().forEach((closeTrigger) => {
+      if (closeTrigger && ev.composedPath().includes(closeTrigger)) {
+        this.close();
+        ev.preventDefault();
+      }
+    });
+    if (ev.defaultPrevented) {
       return;
     }
 
     if (this.clickHandler && ev.target.matches("a,button")) {
       this.clickHandler(ev, this);
     }
+  }
+
+  /**
+   * @returns {NodeListOf}
+   */
+  _closeTriggers() {
+    return this.querySelectorAll(options.closeSelector);
   }
 
   /**
@@ -303,7 +314,8 @@ class PopNotify extends HTMLElement {
   }
 
   _createAutohideTimeout() {
-    if (!this.autohide) {
+    // We don't autohide and there is a close button available, return
+    if (!this.autohide && this._closeTriggers().length > 0) {
       return;
     }
     // If we have links, it should stay longer
