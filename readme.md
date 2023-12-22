@@ -18,7 +18,7 @@
 
 ## How to use
 
-Using simple html:
+Using simple html or just text:
 
 ```html
 <body>
@@ -28,6 +28,10 @@ Using simple html:
     <div class="notification notification-simple">
       Welcome to pop notify! <button type="button" class="btn-close" aria-label="Close"></button>
     </div>
+  </pop-notify>
+
+  <pop-notify autohide variant="info">
+    Or plain text
   </pop-notify>
 
   ...
@@ -122,17 +126,17 @@ customElements.whenDefined("pop-notify").then(() => {
 });
 ```
 
-| Name | Type | Description |
-| --- | --- | --- |
-| placement | <code>String</code> | Where to position container |
-| noTransition | <code>Boolean</code> | Disable animation instead of relying on media queries |
-| defaultDuration | <code>Number</code> | Default duration for autohide in seconds |
-| closeSelector | <code>String</code> | Selector to find close button |
-| closeLabel | <code>String</code> | Close label in the template |
-| classPrefix | <code>String</code> | Prefix for the css classes in the template |
-| buttonClass | <code>String</code> | Base class for buttons |
-| iconTransformer | <code>function</code> | Icon transformer function |
-| template | <code>function</code> | Generator function |
+| Name            | Type                  | Description                                           |
+| --------------- | --------------------- | ----------------------------------------------------- |
+| placement       | <code>String</code>   | Where to position container                           |
+| noTransition    | <code>Boolean</code>  | Disable animation instead of relying on media queries |
+| defaultDuration | <code>Number</code>   | Default duration for autohide in seconds              |
+| closeSelector   | <code>String</code>   | Selector to find close button                         |
+| closeLabel      | <code>String</code>   | Close label in the template                           |
+| classPrefix     | <code>String</code>   | Prefix for the css classes in the template            |
+| buttonClass     | <code>String</code>   | Base class for buttons                                |
+| iconTransformer | <code>function</code> | Icon transformer function                             |
+| template        | <code>function</code> | Generator function                                    |
 
 ## Demo
 

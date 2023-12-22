@@ -240,11 +240,23 @@ class PopNotify extends HTMLElement {
     // It will move to the container
     if (!container.contains(this)) {
       addToContainer(container, this);
+
+      // Return early to avoid firing twice connectedCallback
+      return;
     }
 
     ["click", "mouseenter", "mouseleave"].forEach((type) => {
       this.addEventListener(type, this);
     });
+
+    // Wrap content in template if no html is set
+    if (!this.querySelector(":scope > div") && this.textContent) {
+      this.innerHTML = options.template({
+        variant: this.variant,
+        body: this.innerHTML,
+        close: !this.autohide,
+      });
+    }
 
     this.open();
   }
@@ -272,6 +284,14 @@ class PopNotify extends HTMLElement {
 
   set autohide(v) {
     this._setrm("autohide", v);
+  }
+
+  get variant() {
+    return this.getAttribute("variant") || "default";
+  }
+
+  set variant(v) {
+    this._setrm("variant", v);
   }
 
   handleEvent(ev) {

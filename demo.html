@@ -55,7 +55,7 @@ Hello, world! This is a toast message nb ${id}.
     })
 
     document.querySelector('#simpleNotification').addEventListener('click', (ev) => {
-      popNotify().notifyHtml(`<div class="notification notification-simple">A simple notification! <button type="button" class="btn-close" aria-label="Close"></button></div>`);
+      popNotify().notifyHtml(`A simple notification! <button type="button" class="btn-close" aria-label="Close"></button></div>`);
     })
 
     document.querySelector('#errorNotification').addEventListener('click', (ev) => {
@@ -144,6 +144,14 @@ Hello, world! This is a toast message nb ${id}.
       <div class="notification notification-simple">
         Welcome to pop notify! <button type="button" class="btn-close" aria-label="Close"></button>
       </div>
+    </pop-notify>
+
+    <pop-notify autohide variant="info">
+        Welcome to pop notify with template
+    </pop-notify>
+
+    <pop-notify>
+        Welcome to <b>pop notify</b> <a href="#test">with template</a> and close button
     </pop-notify>
 
     Position
