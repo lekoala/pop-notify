@@ -17,12 +17,18 @@ pop-notify {
     --warning-color: #f65b01;
     --border-radius: 0.5rem;
     --spacer: 0.5rem;
+    --font-size: 14px;
+    --icon-size: 21px;
+    --text-color-rgb: 17, 17, 17;
 }
 
 .notification {
     background: var(--default-color);
     position: relative;
     border-radius: var(--border-radius);
+    font-size: var(--font-size);
+    line-height: 1.5;
+    color: rgb(var(--text-color-rgb));
 
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.07),
         0 2px 4px rgba(0, 0, 0, 0.07),
@@ -35,15 +41,23 @@ pop-notify {
     --btn-close-bg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23000'%3e%3cpath d='M.293.293a1 1 0 0 1 1.414 0L8 6.586 14.293.293a1 1 0 1 1 1.414 1.414L9.414 8l6.293 6.293a1 1 0 0 1-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 0 1-1.414-1.414L6.586 8 .293 1.707a1 1 0 0 1 0-1.414z'/%3e%3c/svg%3e");
     --btn-close-opacity: 0.5;
     --btn-close-hover-opacity: 0.75;
+
     box-sizing: content-box;
     width: 1em;
     height: 1em;
     padding: 0.25em 0.25em;
+    margin-inline-start: calc(var(--spacer) * 2);
     color: var(--btn-close-color);
     background: transparent var(--btn-close-bg) center/1em auto no-repeat;
     border: 0;
     border-radius: var(--border-radius);
     opacity: var(--btn-close-opacity);
+}
+
+.notification>.btn-close {
+    position: absolute;
+    top: var(--spacer);
+    right: calc(var(--spacer) * 2);
 }
 
 .notification .btn-close:hover {
@@ -60,51 +74,57 @@ pop-notify {
     padding-right: calc(var(--spacer) * 3);
 }
 
-.notification .btn-close {
-    position: absolute;
-    top: var(--spacer);
-    right: calc(var(--spacer) * 2);
-}
-
 .notification .notification-header {
     border-bottom: 2px solid rgba(0, 0, 0, 0.15);
     padding: var(--spacer) calc(var(--spacer) * 2);
     display: flex;
-    align-items: center;
+    justify-content: space-between;
+    font-weight: bold;
     background: rgba(0, 0, 0, 0.1);
 }
 
 .notification .notification-icon {
-    margin-right: 0.5rem;
+    margin-inline-end: calc(var(--spacer) * 2);
+    height: var(--icon-size);
+    width: var(--icon-size);
+    font-size: var(--icon-size);
 }
 
 .notification .notification-content {
     display: flex;
     align-items: flex-start;
+    justify-content: space-between;
     padding: var(--spacer) calc(var(--spacer) * 2);
-    margin-right: calc(var(--spacer) * 3);
+}
+
+.notification .notification-body {
+    margin-inline-end: auto;
+    flex-basis: 100%;
+    display: block;
 }
 
 .notification .notification-actions {
-    border-top: 2px solid rgba(0, 0, 0, 0.15);
     display: flex;
-    overflow: hidden;
-    border-bottom-left-radius: var(--border-radius);
-    border-bottom-right-radius: var(--border-radius);
+    margin-block-start: 0.5em;
+}
+
+.notification .notification-actions.notification-actions-1 {
+    display: inline-flex;
+    margin-block-start: 0;
+    margin-inline-start: 1em;
 }
 
 .notification .notification-actions button {
-    border-radius: 0;
-    flex-grow: 1;
+    margin-inline-end: 1rem;
+    border: 2px solid rgba(var(--text-color-rgb), 0.25);
+    color: rgba(var(--text-color-rgb));
+    border-radius: var(--border-radius);
+    background: rgba(var(--text-color-rgb), 0);
+    transition: all 0.25s ease;
 }
 
-/* If we have a header, no need for space on the right for the close icon */
-.notification .notification-header+.notification-content {
-    margin-right: 0;
-}
-
-.notification .notification-header+.notification-content .notification-body {
-    font-size: 0.85em;
+.notification .notification-actions button:hover {
+    background: rgba(var(--text-color-rgb), 0.25);
 }
 
 .notification.notification-success .btn-close,
@@ -118,29 +138,25 @@ pop-notify {
 
 .notification.notification-success {
     background: var(--success-color);
-    color: #fff;
+    --text-color-rgb: 255, 255, 255;
 }
 
 .notification.notification-error {
     background: var(--error-color);
-    color: #fff;
+    --text-color-rgb: 255, 255, 255;
 }
 
 .notification.notification-warning {
     background: var(--warning-color);
-    color: #fff;
+    --text-color-rgb: 255, 255, 255;
 }
 
 .notification.notification-info {
     background: var(--info-color);
-    color: #fff;
+    --text-color-rgb: 255, 255, 255;
 }
 
 .notification.notification-question {
     background: var(--question-color);
-    color: #fff;
-}
-
-#pop-notify-container pop-notify:last-child {
-    --pop-notify-spacer: 0;
+    --text-color-rgb: 255, 255, 255;
 }

@@ -14,7 +14,6 @@ const CE = customElements;
  * @property {String} closeSelector Selector to find close button
  * @property {String} closeLabel Close label in the template
  * @property {String} classPrefix Prefix for the css classes in the template
- * @property {String} buttonClass Base class for buttons
  * @property {Function} iconTransformer Icon transformer function
  * @property {Function} template Generator function
  */
@@ -29,28 +28,26 @@ const options = {
   closeSelector: ".btn-close,.close,[data-close]",
   closeLabel: "Close",
   classPrefix: "notification",
-  buttonClass: "btn",
   iconTransformer: (i) => i,
   template: (o) => {
     const c = options.classPrefix;
+    const icon = o.icon ? `<div class="${c}-icon">${options.iconTransformer(o.icon)}</div>` : "";
+    const close = o.close ? `<button type="button" class="btn-close" aria-label="${options.closeLabel}'"></button>` : "";
+    const actions = o.actions
+      ? `<div class="${c}-actions ${c}-actions-${o.actions.length}">${(() => {
+          let html = "";
+          o.actions.forEach((action) => {
+            html += `<button class="${action.class}">${action.label}</button>`;
+          });
+          return html;
+        })()}</div>`
+      : "";
     return `<div class="${c} ${o.variant ? `${c}-${o.variant}` : ""}" role="status">
-    ${o.header ? `<div class="${c}-header">${o.icon ? `<div class="${c}-icon">${o.icon}</div>` : ""}${o.header}</div>` : ""}
-    <div class="${c}-content">
-    ${o.icon && !o.header ? `<div class="${c}-icon">${o.icon}</div>` : ""}<div class="${c}-body">${o.body}</div>
+    ${o.header ? `<div class="${c}-header">${icon}<div class="${c}-body">${o.header}</div>${close}</div>` : ""}
+      <div class="${c}-content">
+      ${o.icon && !o.header ? icon : ""}<div class="${c}-body"><span>${o.body}</span>${actions}</div>${o.close && !o.header ? close : ""}
+      </div>
     </div>
-    ${
-      o.actions
-        ? `<div class="${c}-actions">${(() => {
-            let html = "";
-            o.actions.forEach((action) => {
-              html += `<button class="${options.buttonClass} ${action.class}">${action.label}</button>`;
-            });
-            return html;
-          })()}</div>`
-        : ""
-    }
-   ${o.close ? `<button type="button" class="btn-close" aria-label="${options.closeLabel}'"></button>` : ""}
-   </div>
    </div>`;
   },
 };
@@ -249,16 +246,20 @@ class PopNotify extends HTMLElement {
       this.addEventListener(type, this);
     });
 
-    // Wrap content in template if no html is set
-    if (!this.querySelector(":scope > div") && this.textContent) {
-      this.innerHTML = options.template({
-        variant: this.variant,
-        body: this.innerHTML,
-        close: !this.autohide,
-      });
-    }
+    // Make sure we got the opportunity to run configure before this
+    requestAnimationFrame(() => {
+      // Wrap content in template if no html is set
+      if (!this.querySelector(":scope > div") && this.textContent) {
+        this.innerHTML = options.template({
+          variant: this.variant,
+          icon: this.icon,
+          body: this.innerHTML,
+          close: !this.autohide,
+        });
+      }
 
-    this.open();
+      this.open();
+    });
   }
 
   disconnectedCallback() {
@@ -292,6 +293,14 @@ class PopNotify extends HTMLElement {
 
   set variant(v) {
     this._setrm("variant", v);
+  }
+
+  get icon() {
+    return this.getAttribute("icon");
+  }
+
+  set icon(v) {
+    this._setrm("icon", v);
   }
 
   handleEvent(ev) {
@@ -442,9 +451,6 @@ class PopNotify extends HTMLElement {
     opts.autohide = typeof opts.autohide === "undefined" ? true : !!opts.autohide;
     // Show close by default
     opts.close = typeof opts.close === "undefined" ? true : !!opts.close;
-    if (opts.icon) {
-      opts.icon = options.iconTransformer(opts.icon);
-    }
     const inst = PopNotify.notifyHtml(options.template(opts), opts.autohide);
     // Create some generic actions handler
     if (opts.actions) {
