@@ -9,8 +9,7 @@ const CE = customElements;
 /**
  * @typedef Config
  * @property {String} placement Where to position container
- * @property {Number} openTime Time to open in seconds
- * @property {Number} closeTime Time to close in seconds
+ * @property {Boolean} noTransition Disable animation instead of relying on media queries
  * @property {Number} defaultDuration Default duration for autohide in seconds
  * @property {String} closeSelector Selector to find close button
  * @property {String} closeLabel Close label in the template
@@ -25,8 +24,7 @@ const CE = customElements;
  */
 const options = {
   placement: "auto",
-  openTime: 0.5,
-  closeTime: 1,
+  noTransition: false,
   defaultDuration: 5,
   closeSelector: ".btn-close,.close,[data-close]",
   closeLabel: "Close",
@@ -58,6 +56,9 @@ const options = {
 };
 
 function animationReduced() {
+  if (options.noTransition) {
+    return true;
+  }
   return (
     window.matchMedia(`(prefers-reduced-motion: reduce)`) === true || window.matchMedia(`(prefers-reduced-motion: reduce)`).matches === true
   );
@@ -200,18 +201,28 @@ class PopNotify extends HTMLElement {
       display: "block", // required for scale animation
       maxWidth: "100%",
       width: "var(--pop-notify-width, 350px)",
-      opacity: "0",
-      transform: "scale(0)",
       overflowWrap: "anywhere", // helps to prevent overflow text outside of toast
     };
+
+    if (!animationReduced()) {
+      O.assign(styles, {
+        willChange: "opacity, transform, " + animateFrom(),
+        opacity: "0",
+        transform: "scale(0)",
+        transition:
+          "all var(--pop-notify-duration, 0.5s) cubic-bezier(0.165, 0.84, 0.44, 1), opacity calc(var(--pop-notify-duration, 0.5s) / 2) ease",
+      });
+      styles[animateFrom()] = "-2rem";
+    }
+
     // The margin for the next toast needs to be there in order to place it easily
     // This has the minor downside that a small space below is not clickable unless we add a last-child rule in css
     styles[spaceFrom()] = "var(--pop-notify-spacer, 1rem)";
-    styles[animateFrom()] = "-2rem";
+
     O.assign(this.style, styles);
 
     this.autohideTo = null;
-    this.closeTo = null;
+    this.isClosing = false;
     this.clickHandler = null;
   }
 
@@ -244,9 +255,6 @@ class PopNotify extends HTMLElement {
     });
     if (this.autohideTo) {
       clearTimeout(this.autohideTo);
-    }
-    if (this.closeTo) {
-      clearTimeout(this.closeTo);
     }
   }
 
@@ -285,6 +293,7 @@ class PopNotify extends HTMLElement {
       return;
     }
 
+    // Action click?
     if (this.clickHandler && ev.target.matches("a,button")) {
       this.clickHandler(ev, this);
     }
@@ -310,6 +319,7 @@ class PopNotify extends HTMLElement {
    * @param {Event|MouseEvent} ev
    */
   onmouseleave(ev) {
+    // Restore autohide timeout
     this._createAutohideTimeout();
   }
 
@@ -331,43 +341,52 @@ class PopNotify extends HTMLElement {
 
   open() {
     if (!animationReduced()) {
-      // The setTimeout is actually needed in order to play the animation and make sure the layout is computed
-      setTimeout(() => {
-        const ms = options.openTime * 500;
+      // This is needed in order to play the animation and make sure the layout is computed
+      requestAnimationFrame(() => {
         const styles = {
-          transition: `all ${ms}ms cubic-bezier(0.165, 0.84, 0.44, 1), opacity ${ms / 2}ms ease`,
           opacity: `1`,
           transform: `scale(1)`,
         };
         styles[animateFrom()] = "0";
         O.assign(this.style, styles);
-      }, 12);
+      });
     }
     this._createAutohideTimeout();
   }
 
   close() {
-    if (this.closeTo) {
+    if (this.isClosing) {
       return;
     }
+    this.isClosing = true;
 
-    let ms = 0;
+    const cb = () => {
+      this.remove();
+      hideIfEmpty(container);
+    };
+
     if (!animationReduced()) {
-      ms = options.closeTime * 1000;
+      // Close when animation finishes
+      this.addEventListener(
+        "transitionend",
+        (ev) => {
+          cb();
+        },
+        {
+          once: true,
+        }
+      );
+
       const styles = {
-        transition: `all ${ms}ms cubic-bezier(0.165, 0.84, 0.44, 1), opacity ${ms / 4}ms ease`,
         opacity: `0`,
         transform: `scale(0)`,
       };
       // We need to exact height (including the two margins) for a smooth transition
       styles[animateFrom()] = `-${getAbsoluteHeight(this)}px`;
       O.assign(this.style, styles);
+    } else {
+      cb();
     }
-
-    this.closeTo = setTimeout(() => {
-      this.remove();
-      hideIfEmpty(container);
-    }, ms);
   }
 
   /**
