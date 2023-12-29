@@ -9,7 +9,7 @@ pop-notify .toast[popover]:not(:popover-open) {
 
 /* Our styles */
 pop-notify {
-    --default-color: #e9ecef;
+    --bg-lightness: 90%;
     --success-color: #228246;
     --info-color: #0077bc;
     --question-color: #527979;
@@ -19,7 +19,14 @@ pop-notify {
     --spacer: 0.5rem;
     --font-size: 14px;
     --icon-size: 21px;
-    --text-color-rgb: 17, 17, 17;
+    --text-color-rgb: var(--bs-body-color-rgb, 17, 17, 17);
+}
+
+@media (prefers-color-scheme: dark) {
+    pop-notify {
+        --bg-lightness: 20%;
+        --text-color-rgb: var(--bs-body-color-rgb, 222, 226, 230);
+    }
 }
 
 /* Notifications should not triggers clicks except when clicking on links and buttons */
@@ -33,7 +40,7 @@ pop-notify {
 }
 
 pop-notify .notification {
-    background: var(--default-color);
+    background: hsl(0 0% var(--bg-lightness) / 90%);
     position: relative;
     border-radius: var(--border-radius);
     font-size: var(--font-size);
