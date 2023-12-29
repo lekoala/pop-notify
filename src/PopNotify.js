@@ -430,7 +430,6 @@ class PopNotify extends HTMLElement {
     el.innerHTML = html;
     el.autohide = autohide;
     addToContainer(container, el);
-
     return el;
   }
 
