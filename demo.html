@@ -86,6 +86,11 @@ Hello, world! This is a toast message nb ${id}.
       popNotify().notifyHtml(`<div class="notification notification-simple">A simple notification! <button type="button" class="btn-close" aria-label="Close"></button></div>`);
     })
 
+    document.querySelector('#simpleNotificationAutohide').addEventListener('click', (ev) => {
+      // If we don't have a close trigger, it will autohide by default since there is no way for the user to close it himself
+      popNotify().notifyHtml(`<div class="notification notification-simple">A simple notification!</div>`);
+    })
+
     document.querySelector('#errorNotification').addEventListener('click', (ev) => {
       popNotify().notify("Nope you can't do that. <a href='/retry'>Retry one more time ?</a>", {
         'variant': 'error',
@@ -247,6 +252,8 @@ Hello, world! This is a toast message nb ${id}.
     <hr>
 
     <button type="button" class="btn btn-primary" id="simpleNotification">A simple notification</button>
+
+    <button type="button" class="btn btn-primary" id="simpleNotificationAutohide">A simple notification with autohide</button>
 
     <button type="button" class="btn btn-primary" id="errorNotification">An error notification</button>
 

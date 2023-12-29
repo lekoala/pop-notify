@@ -169,7 +169,7 @@ function createContainer() {
   // use overflow hidden to avoid any scrollbar due to negative margin
   // reset browsers popover styles
   // add a healthy margin around the screen border
-  el.style.cssText = `position:fixed;overflow:hidden;inset:unset;border:0;margin:var(--pop-notify-spacing, 1rem);max-width:100%;background:transparent;`;
+  el.style.cssText = `position:fixed;overflow:hidden;inset:unset;border:0;margin:var(--pop-notify-spacing, 1rem);max-width:90vw;background:transparent;`;
   if (supportsPopover()) {
     el.popover = "manual";
   } else {
