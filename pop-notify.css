@@ -22,7 +22,17 @@ pop-notify {
     --text-color-rgb: 17, 17, 17;
 }
 
-.notification {
+/* Notifications should not triggers clicks except when clicking on links and buttons */
+#pop-notify-container {
+    pointer-events: none;
+}
+
+#pop-notify-container button,
+#pop-notify-container a {
+    pointer-events: all;
+}
+
+pop-notify .notification {
     background: var(--default-color);
     position: relative;
     border-radius: var(--border-radius);
@@ -36,7 +46,7 @@ pop-notify {
         0 8px 16px rgba(0, 0, 0, 0.07);
 }
 
-.notification .btn-close {
+pop-notify .btn-close {
     --btn-close-color: #000;
     --btn-close-bg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23000'%3e%3cpath d='M.293.293a1 1 0 0 1 1.414 0L8 6.586 14.293.293a1 1 0 1 1 1.414 1.414L9.414 8l6.293 6.293a1 1 0 0 1-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 0 1-1.414-1.414L6.586 8 .293 1.707a1 1 0 0 1 0-1.414z'/%3e%3c/svg%3e");
     --btn-close-opacity: 0.5;
@@ -54,27 +64,27 @@ pop-notify {
     opacity: var(--btn-close-opacity);
 }
 
-.notification>.btn-close {
+pop-notify .notification>.btn-close {
     position: absolute;
     top: var(--spacer);
     right: calc(var(--spacer) * 2);
 }
 
-.notification .btn-close:hover {
+pop-notify .btn-close:hover {
     opacity: var(--btn-close-hover-opacity);
 }
 
-.notification a {
+pop-notify a {
     color: currentColor;
 }
 
-.notification-simple {
+pop-notify .notification-simple {
     padding: var(--spacer);
     padding-left: calc(var(--spacer) * 2);
     padding-right: calc(var(--spacer) * 3);
 }
 
-.notification .notification-header {
+pop-notify .notification-header {
     border-bottom: 2px solid rgba(0, 0, 0, 0.15);
     padding: var(--spacer) calc(var(--spacer) * 2);
     display: flex;
@@ -83,38 +93,38 @@ pop-notify {
     background: rgba(0, 0, 0, 0.1);
 }
 
-.notification .notification-icon {
+pop-notify .notification-icon {
     margin-inline-end: calc(var(--spacer) * 2);
     height: var(--icon-size);
     width: var(--icon-size);
     font-size: var(--icon-size);
 }
 
-.notification .notification-content {
+pop-notify .notification-content {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
     padding: var(--spacer) calc(var(--spacer) * 2);
 }
 
-.notification .notification-body {
+pop-notify .notification-body {
     margin-inline-end: auto;
     flex-basis: 100%;
     display: block;
 }
 
-.notification .notification-actions {
+pop-notify .notification-actions {
     display: flex;
     margin-block-start: 0.5em;
 }
 
-.notification .notification-actions.notification-actions-1 {
+pop-notify .notification-actions.notification-actions-1 {
     display: inline-flex;
     margin-block-start: 0;
     margin-inline-start: 1em;
 }
 
-.notification .notification-actions button {
+pop-notify .notification-actions button {
     margin-inline-end: 1rem;
     border: 2px solid rgba(var(--text-color-rgb), 0.25);
     color: rgba(var(--text-color-rgb));
@@ -123,40 +133,40 @@ pop-notify {
     transition: all 0.25s ease;
 }
 
-.notification .notification-actions button:hover {
+pop-notify .notification-actions button:hover {
     background: rgba(var(--text-color-rgb), 0.25);
 }
 
-.notification.notification-success .btn-close,
-.notification.notification-info .btn-close,
-.notification.notification-question .btn-close,
-.notification.notification-error .btn-close,
-.notification.notification-warning .btn-close {
+pop-notify .notification-success .btn-close,
+pop-notify .notification-info .btn-close,
+pop-notify .notification-question .btn-close,
+pop-notify .notification-error .btn-close,
+pop-notify .notification-warning .btn-close {
     --bs-btn-close-color: #fff;
     filter: invert(100%);
 }
 
-.notification.notification-success {
+pop-notify .notification-success {
     background: var(--success-color);
     --text-color-rgb: 255, 255, 255;
 }
 
-.notification.notification-error {
+pop-notify .notification-error {
     background: var(--error-color);
     --text-color-rgb: 255, 255, 255;
 }
 
-.notification.notification-warning {
+pop-notify .notification-warning {
     background: var(--warning-color);
     --text-color-rgb: 255, 255, 255;
 }
 
-.notification.notification-info {
+pop-notify .notification-info {
     background: var(--info-color);
     --text-color-rgb: 255, 255, 255;
 }
 
-.notification.notification-question {
+pop-notify .notification-question {
     background: var(--question-color);
     --text-color-rgb: 255, 255, 255;
 }
