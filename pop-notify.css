@@ -26,18 +26,30 @@ pop-notify {
 @media (prefers-color-scheme: dark) {
     pop-notify {
         --bg-lightness: 20%;
+        --shadow-color: 0deg 0% 40%;
         --text-color-rgb: var(--bs-body-color-rgb, 222, 226, 230);
     }
 }
 
 /* Notifications should not triggers clicks except when clicking on links and buttons */
-#pop-notify-container {
+.pop-notify-container {
     pointer-events: none;
 }
 
-#pop-notify-container button,
-#pop-notify-container a {
+.pop-notify-container button,
+.pop-notify-container a {
     pointer-events: all;
+}
+
+.pop-notify-toasts {
+    display: grid;
+    justify-content: center;
+}
+
+.pop-notify-toasts pop-notify {
+    --pop-notify-width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 pop-notify .notification {

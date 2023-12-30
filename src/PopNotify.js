@@ -70,7 +70,7 @@ function supportsPopover() {
  * @param {HTMLElement} el
  */
 function addToContainer(container, el) {
-  if (options.placement.includes("bottom")) {
+  if (container.dataset.bottom) {
     container.appendChild(el);
   } else {
     container.prepend(el);
@@ -87,15 +87,18 @@ function spaceFrom() {
 
 /**
  * @param {HTMLElement} el
+ * @param {String} placement
  */
-function show(el) {
-  let [posV, posH] = options.placement.split("-");
+function placeContainer(el, placement = null) {
+  let [posV, posH] = (placement || options.placement).split("-");
 
   // Single argument
   if (!posH) {
     posH = posV;
     posV = "top";
   }
+
+  el.dataset.bottom = posV == "bottom";
 
   // Center means left 50%
   let posUnit = "0";
@@ -119,7 +122,12 @@ function show(el) {
 
   const altPosV = posV == "top" ? "bottom" : "top";
   el.style[altPosV] = "unset";
+}
 
+/**
+ * @param {HTMLElement} el
+ */
+function show(el) {
   if (supportsPopover()) {
     el.showPopover();
   } else if (el.style.display != "block") {
@@ -163,7 +171,7 @@ function getAbsoluteHeight(el) {
 
 function createContainer() {
   const el = DOC.createElement("div");
-  el.id = "pop-notify-container";
+  el.classList.add("pop-notify-container");
   attr(el, "aria-live", "polite");
   attr(el, "aria-relevant", "additions");
   // use overflow hidden to avoid any scrollbar due to negative margin
@@ -187,8 +195,8 @@ function hideIfEmpty(el) {
   }
 }
 
-const container = createContainer();
-BODY.appendChild(container);
+let container,
+  toastContainer = null;
 
 class PopNotify extends HTMLElement {
   constructor() {
@@ -232,15 +240,24 @@ class PopNotify extends HTMLElement {
   }
 
   connectedCallback() {
-    show(container);
+    const p = this.parentElement;
 
     // It will move to the container
-    if (!container.contains(this)) {
+    if (!p.classList.contains("pop-notify-container")) {
+      // Create container if needed
+      if (!container) {
+        container = createContainer();
+        BODY.appendChild(container);
+        placeContainer(container);
+      }
+
       addToContainer(container, this);
 
-      // Return early to avoid firing twice connectedCallback
+      // Return early to avoid firing twice connectedCallback when moving a node
       return;
     }
+
+    show(p);
 
     ["click", "mouseenter", "mouseleave"].forEach((type) => {
       this.addEventListener(type, this);
@@ -467,8 +484,28 @@ class PopNotify extends HTMLElement {
     }
   }
 
+  /**
+   * Create a simple, autohiding toast, in a bottom center container
+   *
+   * @param {String} msg
+   */
+  static toast(msg) {
+    if (!toastContainer) {
+      toastContainer = createContainer();
+      placeContainer(toastContainer, "bottom-center");
+      toastContainer.classList.add("pop-notify-toasts");
+      BODY.appendChild(toastContainer);
+    }
+    const el = new PopNotify();
+    el.innerHTML = `<div class="notification notification-simple">${msg}</div>`;
+    el.autohide = true;
+    addToContainer(toastContainer, el);
+    return el;
+  }
+
   static configure(opts) {
     O.assign(options, opts);
+    placeContainer(container);
   }
 }
 
