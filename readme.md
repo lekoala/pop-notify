@@ -139,7 +139,11 @@ These toasts messages are:
 - have no close icon and autohide automatically
 - have no template and a consistent look
 
-These can be combined with your regular notifications since they belong to a distinct container.
+These can be combined with your regular notifications since they belong to a distinct container and work nicely with light/dark mode.
+
+![Toast dark](docs/toast-dark.png "Toast dark")
+
+![Toast light](docs/toast-light.png "Toast light")
 
 ## Config
 
