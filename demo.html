@@ -30,8 +30,8 @@
 
   <style>
     /* Avoid fouc */
-    :not(:defined) {
-      visibility: hidden;
+    pop-notify:not(:defined) {
+      display: none
     }
   </style>
   <link rel="stylesheet" href="pop-notify.css">
@@ -300,7 +300,7 @@ Hello, world! This is a toast message nb ${id}.
     <button type="button" class="btn btn-primary mb-3" id="androidToast">Android toast</button>
 
     <hr>
-    
+
     <div id="htmx-target"></div>
 
 </body>
