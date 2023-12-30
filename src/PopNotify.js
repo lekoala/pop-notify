@@ -166,6 +166,23 @@ function getAbsoluteHeight(el) {
   return Math.ceil(el.offsetHeight + margin);
 }
 
+function createToastContainer() {
+  if (!toastContainer) {
+    toastContainer = createContainer();
+    placeContainer(toastContainer, "bottom-center");
+    toastContainer.classList.add("pop-notify-toasts");
+    BODY.appendChild(toastContainer);
+  }
+}
+
+function createRegularContainer() {
+  if (!container) {
+    container = createContainer();
+    placeContainer(container);
+    BODY.appendChild(container);
+  }
+}
+
 function createContainer() {
   const el = DOC.createElement("div");
   el.classList.add("pop-notify-container");
@@ -174,7 +191,7 @@ function createContainer() {
   // use overflow hidden to avoid any scrollbar due to negative margin
   // reset browsers popover styles
   // add a healthy margin around the screen border
-  el.style.cssText = `position:fixed;display:grid;overflow:hidden;inset:unset;box-sizing:border-box;width:100%;border:0;padding:var(--pop-notify-spacing, 1rem);background:transparent;`;
+  el.style.cssText = `position:fixed;display:grid;overflow:hidden;inset:unset;box-sizing:border-box;width:100%;border:0;padding:var(--pop-notify-spacing, 1rem);min-height:2rem;background:transparent;`;
   if (supportsPopover()) {
     el.popover = "manual";
   } else {
@@ -199,7 +216,7 @@ class PopNotify extends HTMLElement {
 
     const styles = {
       display: "block", // required for scale animation
-      maxWidth: "100%",
+      maxWidth: "480px",
       width: "var(--pop-notify-width, 350px)",
       overflowWrap: "anywhere", // helps to prevent overflow text outside of toast
     };
@@ -223,24 +240,21 @@ class PopNotify extends HTMLElement {
 
     // It will move to the container
     if (!p.classList.contains("pop-notify-container")) {
-      // Create container if needed
-      if (!container) {
-        container = createContainer();
-        BODY.appendChild(container);
-        placeContainer(container);
+      // Determine container
+      if (this.hasAttribute("toast")) {
+        createToastContainer();
+        addToContainer(toastContainer, this);
+      } else {
+        createRegularContainer();
+        addToContainer(container, this);
       }
-
-      addToContainer(container, this);
 
       // Return early to avoid firing twice connectedCallback when moving a node
       return;
     }
 
-    show(p);
-
-    let styles = {};
     if (!animationReduced()) {
-      styles = {
+      const styles = {
         willChange: "opacity, transform, margin",
         opacity: "0",
         transform: "scale(0)",
@@ -248,12 +262,14 @@ class PopNotify extends HTMLElement {
           "all var(--pop-notify-duration, 0.5s) cubic-bezier(0.165, 0.84, 0.44, 1), opacity calc(var(--pop-notify-duration, 0.5s) / 2) ease",
       };
       styles[animateFrom(p)] = "-2rem";
+      O.assign(this.style, styles);
     }
 
     // The margin for the next toast needs to be there in order to place it easily
-    styles[spaceFrom(p)] = "var(--pop-notify-spacer, 1rem)";
+    this.style[spaceFrom(p)] = "var(--pop-notify-spacer, 1rem)";
 
-    O.assign(this.style, styles);
+    // This needs to happen AFTER styles have been assigned for the animation to work properly
+    show(p);
 
     ["click", "mouseenter", "mouseleave"].forEach((type) => {
       this.addEventListener(type, this);
@@ -263,14 +279,17 @@ class PopNotify extends HTMLElement {
     requestAnimationFrame(() => {
       // Wrap content in template if no html is set
       if (!this.querySelector(":scope > div") && this.textContent) {
-        this.innerHTML = options.template({
-          variant: this.variant,
-          icon: this.icon,
-          body: this.innerHTML,
-          close: !this.autohide,
-        });
+        if (this.hasAttribute("toast")) {
+          this.innerHTML = `<div class="notification notification-simple">${this.innerHTML}</div>`;
+        } else {
+          this.innerHTML = options.template({
+            variant: this.variant,
+            icon: this.icon,
+            body: this.innerHTML,
+            close: !this.autohide,
+          });
+        }
       }
-
       this.open();
     });
   }
@@ -484,17 +503,13 @@ class PopNotify extends HTMLElement {
    * Create a simple, autohiding toast, in a bottom center container
    *
    * @param {String} msg
+   * @returns {PopNotify}
    */
   static toast(msg) {
-    if (!toastContainer) {
-      toastContainer = createContainer();
-      placeContainer(toastContainer, "bottom-center");
-      toastContainer.classList.add("pop-notify-toasts");
-      BODY.appendChild(toastContainer);
-    }
+    createToastContainer();
     const el = new PopNotify();
-    el.innerHTML = `<div class="notification notification-simple">${msg}</div>`;
-    el.autohide = true;
+    el.innerHTML = msg;
+    el.setAttribute("toast", "");
     addToContainer(toastContainer, el);
     return el;
   }

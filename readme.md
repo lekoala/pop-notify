@@ -14,6 +14,8 @@
 - Fully accessible
 - Nice animations
 - Actions support
+- Dark mode support
+- Android style toast and/or notifications
 - Just 5kb
 
 ## How to use
@@ -115,6 +117,29 @@ your user of the update (think, some kind of polling script that might or might 
 
 Since pop-notify is a regular html element, you can simply inject it anywhere you want and it will automatically be moved
 to the toast container and displayed accordingly.
+
+## Android toasts
+
+If you want to have more "lightweight" toast messages, like those you can find on android, you can use the `toast` method
+
+```js
+customElements.get("pop-notify").toast("My message");
+```
+
+or
+
+```html
+<pop-notify toast>
+  I'm a toast
+</pop-notify>
+```
+
+These toasts messages are:
+- centered, with variable width, at the bottom
+- have no close icon and autohide automatically
+- have no template and a consistent look
+
+These can be combined with your regular notifications since they belong to a distinct container.
 
 ## Config
 
