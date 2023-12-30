@@ -22,7 +22,7 @@ const CE = customElements;
  * @type {Config}
  */
 const options = {
-  placement: "auto",
+  placement: "end",
   noTransition: false,
   defaultDuration: 5,
   closeSelector: ".btn-close,.close,[data-close]",
@@ -70,19 +70,25 @@ function supportsPopover() {
  * @param {HTMLElement} el
  */
 function addToContainer(container, el) {
-  if (container.dataset.bottom) {
+  if (container.dataset.bottom === "1") {
     container.appendChild(el);
   } else {
     container.prepend(el);
   }
 }
 
-function animateFrom() {
-  return options.placement.includes("bottom") ? "marginBottom" : "marginTop";
+/**
+ * @param {HTMLElement} container
+ */
+function animateFrom(container) {
+  return container.dataset.bottom === "1" ? "marginBottom" : "marginTop";
 }
 
-function spaceFrom() {
-  return options.placement.includes("bottom") ? "marginTop" : "marginBottom";
+/**
+ * @param {HTMLElement} container
+ */
+function spaceFrom(container) {
+  return container.dataset.bottom === "1" ? "marginTop" : "marginBottom";
 }
 
 /**
@@ -98,30 +104,21 @@ function placeContainer(el, placement = null) {
     posV = "top";
   }
 
-  el.dataset.bottom = posV == "bottom";
-
-  // Center means left 50%
-  let posUnit = "0";
-  if (posH == "center") {
-    posUnit = "50%";
-    posH = "left";
+  // Convert to logical properties
+  if (posH == "left") {
+    posH = BODY.dir == "rtl" ? "end" : "start";
+  }
+  if (posH == "right") {
+    posH = BODY.dir == "rtl" ? "start" : "end";
   }
 
-  // Auto depends on RTL
-  if (posH == "auto") {
-    posH = BODY.dir == "rtl" ? "left" : "right";
-  }
+  // Flag if we need to append or prepend children due to placement
+  el.dataset.bottom = posV == "bottom" ? "1" : "0";
 
-  el.style[posH] = posUnit;
-  el.style.transform = posUnit == "50%" ? "translateX(-50%)" : "";
+  // Position content
+  el.style.justifyContent = posH === "center" ? "center" : `flex-${posH}`;
   el.style[posV] = "0";
-
-  // Clear other pos
-  const altPosH = posH == "right" ? "left" : "right";
-  el.style[altPosH] = "unset";
-
-  const altPosV = posV == "top" ? "bottom" : "top";
-  el.style[altPosV] = "unset";
+  el.style[posV == "top" ? "bottom" : "top"] = "unset";
 }
 
 /**
@@ -130,8 +127,8 @@ function placeContainer(el, placement = null) {
 function show(el) {
   if (supportsPopover()) {
     el.showPopover();
-  } else if (el.style.display != "block") {
-    el.style.display = "block";
+  } else if (el.style.display != "grid") {
+    el.style.display = "grid";
   }
 }
 
@@ -177,14 +174,12 @@ function createContainer() {
   // use overflow hidden to avoid any scrollbar due to negative margin
   // reset browsers popover styles
   // add a healthy margin around the screen border
-  el.style.cssText = `position:fixed;overflow:hidden;inset:unset;border:0;margin:var(--pop-notify-spacing, 1rem);max-width:90vw;background:transparent;`;
+  el.style.cssText = `position:fixed;display:grid;overflow:hidden;inset:unset;box-sizing:border-box;width:100%;border:0;padding:var(--pop-notify-spacing, 1rem);background:transparent;`;
   if (supportsPopover()) {
     el.popover = "manual";
   } else {
-    O.assign(el.style, {
-      zIndex: "9999",
-      display: "none",
-    });
+    el.style.zIndex = "9999";
+    el.style.display = "none";
   }
   return el;
 }
@@ -208,22 +203,6 @@ class PopNotify extends HTMLElement {
       width: "var(--pop-notify-width, 350px)",
       overflowWrap: "anywhere", // helps to prevent overflow text outside of toast
     };
-
-    if (!animationReduced()) {
-      O.assign(styles, {
-        willChange: "opacity, transform, " + animateFrom(),
-        opacity: "0",
-        transform: "scale(0)",
-        transition:
-          "all var(--pop-notify-duration, 0.5s) cubic-bezier(0.165, 0.84, 0.44, 1), opacity calc(var(--pop-notify-duration, 0.5s) / 2) ease",
-      });
-      styles[animateFrom()] = "-2rem";
-    }
-
-    // The margin for the next toast needs to be there in order to place it easily
-    // This has the minor downside that a small space below is not clickable unless we add a last-child rule in css
-    styles[spaceFrom()] = "var(--pop-notify-spacer, 1rem)";
-
     O.assign(this.style, styles);
 
     this.autohideTo = null;
@@ -258,6 +237,23 @@ class PopNotify extends HTMLElement {
     }
 
     show(p);
+
+    let styles = {};
+    if (!animationReduced()) {
+      styles = {
+        willChange: "opacity, transform, margin",
+        opacity: "0",
+        transform: "scale(0)",
+        transition:
+          "all var(--pop-notify-duration, 0.5s) cubic-bezier(0.165, 0.84, 0.44, 1), opacity calc(var(--pop-notify-duration, 0.5s) / 2) ease",
+      };
+      styles[animateFrom(p)] = "-2rem";
+    }
+
+    // The margin for the next toast needs to be there in order to place it easily
+    styles[spaceFrom(p)] = "var(--pop-notify-spacer, 1rem)";
+
+    O.assign(this.style, styles);
 
     ["click", "mouseenter", "mouseleave"].forEach((type) => {
       this.addEventListener(type, this);
@@ -393,7 +389,7 @@ class PopNotify extends HTMLElement {
           opacity: `1`,
           transform: `scale(1)`,
         };
-        styles[animateFrom()] = "0";
+        styles[animateFrom(this.parentElement)] = "0";
         O.assign(this.style, styles);
       });
     }
@@ -428,7 +424,7 @@ class PopNotify extends HTMLElement {
         transform: `scale(0)`,
       };
       // We need to exact height (including the two margins) for a smooth transition
-      styles[animateFrom()] = `-${getAbsoluteHeight(this)}px`;
+      styles[animateFrom(this.parentElement)] = `-${getAbsoluteHeight(this, container)}px`;
       O.assign(this.style, styles);
     } else {
       cb();

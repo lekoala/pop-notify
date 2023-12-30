@@ -163,84 +163,13 @@ Hello, world! This is a toast message nb ${id}.
 
 
     function generateLoremText(numWords) {
-      var loremText = '';
-      var words = [
-        'Lorem',
-        'ipsum',
-        'dolor',
-        'sit',
-        'amet',
-        'consectetur',
-        'adipiscing',
-        'elit',
-        'sed',
-        'do',
-        'eiusmod',
-        'tempor',
-        'incididunt',
-        'ut',
-        'labore',
-        'et',
-        'dolore',
-        'magna',
-        'aliqua',
-        'Ut',
-        'enim',
-        'ad',
-        'minim',
-        'veniam',
-        'quis',
-        'nostrud',
-        'exercitation',
-        'ullamco',
-        'laboris',
-        'nisi',
-        'ut',
-        'aliquip',
-        'ex',
-        'ea',
-        'commodo',
-        'consequat',
-        'Duis',
-        'aute',
-        'irure',
-        'dolor',
-        'in',
-        'reprehenderit',
-        'in',
-        'voluptate',
-        'velit',
-        'esse',
-        'cillum',
-        'dolore',
-        'eu',
-        'fugiat',
-        'nulla',
-        'pariatur',
-        'Excepteur',
-        'sint',
-        'occaecat',
-        'cupidatat',
-        'non',
-        'proident',
-        'sunt',
-        'in',
-        'culpa',
-        'qui',
-        'officia',
-        'deserunt',
-        'mollit',
-        'anim',
-        'id',
-        'est',
-        'laborum',
-      ];
-
-      for (var j = 0; j < numWords; j++) {
-        var randomWord = words[Math.floor(Math.random() * words.length)];
-        loremText += randomWord + ' ';
+      let loremText = [];
+      let words = `lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor 
+      incididunt ut labore et dolore magna aliqua ut enim ad minim veniam quis nostrud exercitation`.split(' ')
+      for (var j = 0; j <= numWords; j++) {
+        loremText.push(words[Math.floor(Math.random() * words.length)])
       }
-      return loremText;
+      return loremText.join(' ');
     }
 
 
@@ -324,13 +253,18 @@ Hello, world! This is a toast message nb ${id}.
 
     Position
     <select id="position">
-      <option>auto</option>
+      <option>end</option>
+      <option>start</option>
       <option>left</option>
       <option>right</option>
       <option>center</option>
+      <option>top-end</option>
+      <option>top-start</option>
       <option>top-left</option>
       <option>top-center</option>
       <option>top-right</option>
+      <option>bottom-end</option>
+      <option>bottom-start</option>
       <option>bottom-left</option>
       <option>bottom-center</option>
       <option>bottom-right</option>

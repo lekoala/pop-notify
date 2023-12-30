@@ -41,11 +41,7 @@ pop-notify {
     pointer-events: all;
 }
 
-.pop-notify-toasts {
-    display: grid;
-    justify-content: center;
-}
-
+/* Android style toast have variable width */
 .pop-notify-toasts pop-notify {
     --pop-notify-width: fit-content;
     margin-left: auto;
