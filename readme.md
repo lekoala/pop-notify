@@ -16,7 +16,7 @@
 - Actions support
 - Dark mode support
 - Android style toast and/or notifications
-- Just 5kb
+- Just 7kb (11kb with styles)
 
 ## How to use
 

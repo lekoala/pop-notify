@@ -1,7 +1,7 @@
 {
   "name": "pop-notify",
   "type": "module",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "A modern custom element to create toast notifications",
   "main": "pop-notify",
   "scripts": {
